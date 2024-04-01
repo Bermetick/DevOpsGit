@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "My second template"
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: Dev
+Mappings:
+  AmiMapping:
+    us-east-1:
+      AmiId: ami-0c101f26f147fa7fd
+    us-west-2:
+      AmiId: ami-0a70b9d193ae8a799
+Conditions:
+  isDev: !Equals [ !Ref EnvironmentName, Dev ]
+Resources:
+  MyEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !FindInMap [ AmiMapping, !Ref "AWS::Region", AmiId ]
+      InstanceType: !If [isDev, t2.micro, t3.micro]
+      SecurityGroupIds:
+        - !GetAtt MySecurityGroup.GroupId
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Test Security Group
+      GroupName: test-sg
+      SecurityGroupIngress:
+        -   CidrIp: 0.0.0.0/0
+            FromPort: 22
+            IpProtocol: tcp
+            ToPort: 22
+        -   CidrIp: 0.0.0.0/0
+            FromPort: 80
+            IpProtocol: tcp
+            ToPort: 80
+      VpcId: vpc-0fa60a0ccca23ab40
+
+
